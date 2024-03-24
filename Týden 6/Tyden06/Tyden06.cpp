@@ -7,6 +7,7 @@
 class Matice {
     float **matice;
     int pocet_radku, pocet_sloupcu;
+    bool is_scalar = false;
 
 public:
     // Incializující konstruktor
@@ -31,21 +32,16 @@ public:
         }
     }
 
-    // Konverzní konstruktor, parametrem je 2D pole
-    Matice(const float **x) {
-        pocet_radku = sizeof(x) / sizeof(x[0]);
-        pocet_sloupcu = sizeof(x[0]) / sizeof(x[0][0]);
+    // Konverzní konstruktor, vytvoøí matici 1x1
+    Matice(float x) {
+        is_scalar = true;
 
-        matice = new float* [pocet_radku];
-        for (int i = 0; i < pocet_radku; i++) {
-            matice[i] = new float[pocet_sloupcu];
-        }
+        matice = new float*;
+        matice[0] = new float;
 
-        for (int i = 0; i < pocet_radku; i++) {
-            for (int j = 0; j < pocet_sloupcu; j++) {
-                matice[i][j] = x[i][j];
-            }
-        }
+        pocet_radku = pocet_sloupcu = 1;
+
+        matice[0][0] = x;
     }
 
     // Destruktor
@@ -68,12 +64,7 @@ public:
     friend Matice operator+(const Matice& operand1, const Matice& operand2);
     friend Matice operator-(const Matice& operand1, const Matice& operand2);
     friend Matice operator*(const Matice& operand1, const Matice& operand2);
-    // Skalární operace
-    friend Matice operator+(const Matice& operand1, const float& operand2);
-    friend Matice operator-(const Matice& operand1, const float& operand2);
-    friend Matice operator*(const Matice& operand1, const float& operand2);
-    friend Matice operator/(const Matice& operand1, const float& operand2);
-
+    friend Matice operator/(const Matice& operand1, const Matice& operand2);
 
     // Unární operátor -
     Matice operator-() {
@@ -123,99 +114,165 @@ public:
 
 // Binární operátory
 Matice operator+(const Matice& operand1, const Matice &operand2) {
-    if (operand1.pocet_radku == operand2.pocet_radku && operand1.pocet_sloupcu == operand2.pocet_sloupcu) {
-        Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
+    if (!operand1.is_scalar && !operand2.is_scalar) {
+        if (operand1.pocet_radku == operand2.pocet_radku && operand1.pocet_sloupcu == operand2.pocet_sloupcu) {
+            Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
 
-        for (int i = 0; i < operand1.pocet_radku; i++) {
-            for (int j = 0; j < operand1.pocet_sloupcu; j++) {
-                vysledek.matice[i][j] = operand1.matice[i][j] + operand2.matice[i][j];
+            for (int i = 0; i < operand1.pocet_radku; i++) {
+                for (int j = 0; j < operand1.pocet_sloupcu; j++) {
+                    vysledek.matice[i][j] = operand1.matice[i][j] + operand2.matice[i][j];
+                }
+            }
+
+            return vysledek;
+        }
+        else return NULL;
+    }
+    else if (operand1.is_scalar) {
+        Matice vysledek(operand2.pocet_radku, operand2.pocet_sloupcu);
+
+        for (int i = 0; i < operand2.pocet_radku; i++) {
+            for (int j = 0; j < operand2.pocet_sloupcu; j++) {
+                vysledek.matice[i][j] = operand2.matice[i][j] + operand1.matice[0][0];
             }
         }
 
         return vysledek;
     }
-    else return NULL;
+    else if (operand2.is_scalar) {
+        Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
+
+        for (int i = 0; i < operand1.pocet_radku; i++) {
+            for (int j = 0; j < operand1.pocet_sloupcu; j++) {
+                vysledek.matice[i][j] = operand1.matice[i][j] + operand2.matice[0][0];
+            }
+        }
+
+        return vysledek;
+    }
 }
 
 Matice operator-(const Matice& operand1, const Matice &operand2) {
-    if (operand1.pocet_radku == operand2.pocet_radku && operand1.pocet_sloupcu == operand2.pocet_sloupcu) {
+    if (!operand1.is_scalar && !operand2.is_scalar) {
+        if (operand1.pocet_radku == operand2.pocet_radku && operand1.pocet_sloupcu == operand2.pocet_sloupcu) {
+            Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
+
+            for (int i = 0; i < operand1.pocet_radku; i++) {
+                for (int j = 0; j < operand1.pocet_sloupcu; j++) {
+                    vysledek.matice[i][j] = operand1.matice[i][j] - operand2.matice[i][j];
+                }
+            }
+
+            return vysledek;
+        }
+        else return NULL;
+    }
+    else if (operand1.is_scalar) {
+        Matice vysledek(operand2.pocet_radku, operand2.pocet_sloupcu);
+
+        for (int i = 0; i < operand2.pocet_radku; i++) {
+            for (int j = 0; j < operand2.pocet_sloupcu; j++) {
+                vysledek.matice[i][j] = operand2.matice[i][j] - operand1.matice[0][0];
+            }
+        }
+
+        return vysledek;
+    }
+    else if (operand2.is_scalar) {
         Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
 
         for (int i = 0; i < operand1.pocet_radku; i++) {
             for (int j = 0; j < operand1.pocet_sloupcu; j++) {
-                vysledek.matice[i][j] = operand1.matice[i][j] - operand2.matice[i][j];
+                vysledek.matice[i][j] = operand1.matice[i][j] - operand2.matice[0][0];
             }
         }
 
         return vysledek;
     }
-    else return NULL;
 }
 
 Matice operator*(const Matice& operand1, const Matice &operand2) {
-    if (operand1.pocet_sloupcu == operand2.pocet_radku) {
-        Matice vysledek(operand2.pocet_radku, operand1.pocet_sloupcu);
+    // Maticové násobení
+    if (!operand1.is_scalar && !operand2.is_scalar) {
+        if (operand1.pocet_sloupcu == operand2.pocet_radku) {
+            Matice vysledek(operand2.pocet_radku, operand1.pocet_sloupcu);
 
-        for (int i = 0; i < operand1.pocet_radku; i++) {
-            for (int j = 0; j < operand2.pocet_sloupcu; j++) {
-                for (int k = 0; k < operand1.pocet_sloupcu; k++) {
-                    vysledek.matice[i][j] = operand1.matice[i][k] * operand2.matice[k][j];
+            for (int i = 0; i < operand1.pocet_radku; i++) {
+                for (int j = 0; j < operand2.pocet_sloupcu; j++) {
+                    for (int k = 0; k < operand1.pocet_sloupcu; k++) {
+                        vysledek.matice[i][j] = operand1.matice[i][k] * operand2.matice[k][j];
+                    }
                 }
+            }
+
+            return vysledek;
+        }
+        else return NULL;
+    }
+    // Skalární násobení
+    else if (operand1.is_scalar) {
+        Matice vysledek(operand2.pocet_radku, operand2.pocet_sloupcu);
+
+        for (int i = 0; i < operand2.pocet_radku; i++) {
+            for (int j = 0; j < operand2.pocet_sloupcu; j++) {
+                vysledek.matice[i][j] = operand2.matice[i][j] * operand1.matice[0][0];
             }
         }
 
         return vysledek;
     }
-    else return NULL;
-}
+    else if (operand2.is_scalar) {
+        Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
 
-Matice operator+(const Matice& operand1, const float& operand2) {
-    Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
-
-    for (int i = 0; i < operand1.pocet_radku; i++) {
-        for (int j = 0; j < operand1.pocet_sloupcu; j++) {
-            vysledek.matice[i][j] = operand1.matice[i][j] + operand2;
+        for (int i = 0; i < operand1.pocet_radku; i++) {
+            for (int j = 0; j < operand1.pocet_sloupcu; j++) {
+                vysledek.matice[i][j] = operand1.matice[i][j] * operand2.matice[0][0];
+            }
         }
-    }
 
-    return vysledek;
+        return vysledek;
+    }
 }
 
-Matice operator-(const Matice& operand1, const float& operand2) {
-    Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
+Matice operator/(const Matice& operand1, const Matice& operand2) { // Nejedná se o dìlení matic, pouze o dìlení prvkù matice
+    if (!operand1.is_scalar && !operand2.is_scalar) {
+        if (operand1.pocet_radku == operand2.pocet_radku && operand1.pocet_sloupcu == operand2.pocet_sloupcu) {
+            Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
 
-    for (int i = 0; i < operand1.pocet_radku; i++) {
-        for (int j = 0; j < operand1.pocet_sloupcu; j++) {
-            vysledek.matice[i][j] = operand1.matice[i][j] - operand2;
+            for (int i = 0; i < operand1.pocet_radku; i++) {
+                for (int j = 0; j < operand1.pocet_sloupcu; j++) {
+                    vysledek.matice[i][j] = operand1.matice[i][j] / operand2.matice[i][j];
+                }
+            }
+
+            return vysledek;
         }
+        else return NULL;
     }
+    else if (operand1.is_scalar) {
+        Matice vysledek(operand2.pocet_radku, operand2.pocet_sloupcu);
 
-    return vysledek;
-}
-
-Matice operator*(const Matice& operand1, const float& operand2) {
-    Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
-
-    for (int i = 0; i < operand1.pocet_radku; i++) {
-        for (int j = 0; j < operand1.pocet_sloupcu; j++) {
-            vysledek.matice[i][j] = operand1.matice[i][j] * operand2;
+        for (int i = 0; i < operand2.pocet_radku; i++) {
+            for (int j = 0; j < operand2.pocet_sloupcu; j++) {
+                vysledek.matice[i][j] = operand2.matice[i][j] / operand1.matice[0][0];
+            }
         }
+
+        return vysledek;
     }
+    else if (operand2.is_scalar) {
+        Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
 
-    return vysledek;
-}
-
-Matice operator/(const Matice& operand1, const float& operand2) {
-    Matice vysledek(operand1.pocet_radku, operand1.pocet_sloupcu);
-
-    for (int i = 0; i < operand1.pocet_radku; i++) {
-        for (int j = 0; j < operand1.pocet_sloupcu; j++) {
-            vysledek.matice[i][j] = operand1.matice[i][j] / operand2;
+        for (int i = 0; i < operand1.pocet_radku; i++) {
+            for (int j = 0; j < operand1.pocet_sloupcu; j++) {
+                vysledek.matice[i][j] = operand1.matice[i][j] / operand2.matice[0][0];
+            }
         }
-    }
 
-    return vysledek;
+        return vysledek;
+    }
 }
+
 
 std::ostream& operator<<(std::ostream& out, Matice& x) {
     for (int i = 0; i < x.pocet_radku; i++) {
