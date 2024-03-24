@@ -273,7 +273,6 @@ Matice operator/(const Matice& operand1, const Matice& operand2) { // Nejedná se
     }
 }
 
-
 std::ostream& operator<<(std::ostream& out, Matice& x) {
     for (int i = 0; i < x.pocet_radku; i++) {
         for (int j = 0; j < x.pocet_sloupcu; j++) {
